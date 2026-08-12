@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ABBAHGAMJI — Admin Dashboard</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,500;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Luxury palette: Oxford Blue, gold, sand, white */
+    --ink:#0a1f44; --ink-2:#132c5c; --white:#ffffff; --sand:#e8dcc0; --ivory:#f7f2e4; --gold:#c9a24a; --gold-light:#ddbb6e;
+    --charcoal:#221f1b; --muted:#6b675f; --line:#e6e0d2; --success:#3f6b4a; --warn:#a3721e; --danger:#a33d2e;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--ivory);color:var(--charcoal);display:flex;min-height:100vh;}
+  h1,h2,h3{font-family:'Playfair Display',serif;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;text-decoration:none;}
+
+  /* Login gate */
+  #loginGate{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:200;}
+  .login-box{background:var(--ivory);padding:44px 40px;border-radius:2px;width:min(380px,90vw);border-top:3px solid var(--gold);}
+  .login-box .eyebrow{display:block;font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:14px;}
+  .login-box .eyebrow::before{content:"";display:inline-block;width:18px;height:1px;background:var(--gold);margin-right:8px;vertical-align:middle;}
+  .login-box .eyebrow::after{content:"";display:inline-block;width:18px;height:1px;background:var(--gold);margin-left:8px;vertical-align:middle;}
+  .login-box h2{color:var(--ink);margin-bottom:6px;font-style:italic;}
+  .login-box p.sub{color:var(--muted);font-size:.85rem;margin-bottom:24px;}
+  .form-group{margin-bottom:16px;}
+  .form-group label{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px;}
+  .form-group input, .form-group select, .form-group textarea{width:100%;padding:11px 13px;border:1px solid #ddd;border-radius:2px;font-family:inherit;font-size:.9rem;transition:border-color .2s ease;}
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus{outline:none;border-color:var(--gold);}
+  .btn{display:inline-block;padding:12px 22px;border:none;border-radius:2px;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase;font-weight:600;transition:transform .2s ease, box-shadow .2s ease;}
+  .btn-solid{background:var(--gold);color:var(--ink);}
+  .btn-solid:hover{box-shadow:0 8px 18px rgba(201,162,74,.35);transform:translateY(-2px);}
+  .btn-dark{background:var(--ink);color:var(--ivory);}
+  .btn-outline{background:none;border:1px solid #ccc;color:var(--charcoal);}
+  .btn-danger{background:var(--danger);color:white;}
+  .btn-block{width:100%;text-align:center;}
+  .demo-note{font-size:.75rem;color:var(--muted);margin-top:16px;line-height:1.5;}
+
+  /* Layout */
+  .sidebar{width:230px;background:var(--ink);color:var(--ivory);flex-shrink:0;display:flex;flex-direction:column;padding:26px 0;}
+  .sidebar .brand{padding:0 22px 22px;font-family:'Playfair Display',serif;font-weight:700;font-size:1.1rem;letter-spacing:.05em;position:relative;margin-bottom:18px;}
+  .sidebar .brand span{color:var(--gold);}
+  .sidebar .brand::after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:0;border-top:1px dashed rgba(201,162,74,.4);}
+  .sidebar nav a{display:flex;align-items:center;gap:10px;padding:13px 22px;font-size:.85rem;letter-spacing:.02em;color:rgba(246,241,228,.7);border-right:3px solid transparent;transition:background .2s ease, color .2s ease;}
+  .sidebar nav a:hover{background:rgba(246,241,228,.06);color:var(--ivory);}
+  .sidebar nav a.active{background:rgba(201,162,74,.12);color:var(--gold);border-right-color:var(--gold);}
+  .sidebar .back{margin-top:auto;padding:16px 22px;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:rgba(246,241,228,.5);}
+  .sidebar .back:hover{color:var(--gold);}
+
+  .main{flex:1;padding:38px 44px;overflow-y:auto;}
+  .page-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;}
+  .page-head h1{font-size:1.8rem;color:var(--ink);font-style:italic;}
+  .page-head p{color:var(--muted);font-size:.88rem;margin-top:4px;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:36px;}
+  .stat-card{background:#fff;border:1px solid var(--line);border-top:2px solid var(--gold);border-radius:2px;padding:22px;}
+  .stat-card .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+  .stat-card .value{font-family:'Playfair Display',serif;font-size:1.9rem;color:var(--ink);margin-top:8px;}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:2px;overflow:hidden;}
+  .panel-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .panel-head h3{font-size:1.05rem;color:var(--ink);font-style:italic;}
+  table{width:100%;border-collapse:collapse;font-size:.87rem;}
+  th{text-align:left;padding:12px 22px;background:#faf8f3;color:var(--muted);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;}
+  td{padding:14px 22px;border-top:1px solid var(--line);vertical-align:middle;}
+  td img{width:44px;height:56px;object-fit:cover;border-radius:2px;}
+  .row-actions{display:flex;gap:8px;}
+  .row-actions button{padding:7px 12px;font-size:.72rem;letter-spacing:.02em;border-radius:2px;border:1px solid #ddd;background:white;transition:background .2s ease;}
+  .row-actions button:hover{background:#f2eee2;border-color:var(--gold);}
+  select.status-select{padding:7px 10px;border-radius:2px;border:1px solid #ddd;font-size:.8rem;}
+  .pill{font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;padding:4px 11px;border-radius:12px;font-weight:600;}
+  .pill.placed{background:#eef0f4;color:var(--ink);}
+  .pill.progress{background:#f7edd8;color:var(--warn);}
+  .pill.delivery{background:#e8f0e8;color:var(--success);}
+  .pill.delivered{background:#e2f0e6;color:var(--success);}
+
+  .empty{padding:50px 22px;text-align:center;color:var(--muted);font-size:.9rem;}
+  .section-toolbar{display:flex;gap:12px;margin-bottom:18px;}
+  .section-toolbar input{flex:1;padding:11px 14px;border:1px solid var(--line);border-radius:2px;font-size:.87rem;}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(20,27,46,.55);display:none;align-items:center;justify-content:center;z-index:150;}
+  .modal-bg.show{display:flex;}
+  .modal-box{background:white;border-radius:2px;width:min(520px,92vw);max-height:88vh;overflow-y:auto;border-top:3px solid var(--gold);}
+  .modal-box .mh{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .modal-box .mh h3{font-style:italic;}
+  .modal-box .mb{padding:24px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .close-x{background:none;border:none;font-size:1.3rem;color:var(--charcoal);}
+  .measure-view{background:#faf8f3;border-left:3px solid var(--gold);padding:14px 16px;font-size:.85rem;margin-top:14px;border-radius:2px;}
+  .measure-view div{margin-bottom:4px;}
+
+  .view-section{display:none;}
+  .view-section.active{display:block;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--ivory);padding:14px 26px;border-radius:4px;font-size:.88rem;z-index:250;opacity:0;pointer-events:none;transition:all .25s ease;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:800px){
+    body{flex-direction:column;}
+    .sidebar{width:100%;flex-direction:row;overflow-x:auto;padding:14px;}
+    .sidebar .brand{display:none;}
+    .sidebar nav{display:flex;}
+    .sidebar .back{display:none;}
+    .main{padding:24px 20px;}
+    .form-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN GATE ============ -->
+<div id="loginGate">
+  <div class="login-box">
+    <span class="eyebrow">ABBAHGAMJI</span>
+    <h2>Admin Login</h2>
+    <p class="sub">Sign in to manage ABBAHGAMJI products and orders.</p>
+    <form id="adminLoginForm">
+      <div class="form-group"><label for="adminUser">Username</label><input type="text" id="adminUser" placeholder="(not checked — see note below)"></div>
+      <div class="form-group"><label for="adminPass">Admin Token</label><input type="password" id="adminPass" required></div>
+      <button type="submit" class="btn btn-solid btn-block">Log In</button>
+    </form>
+    <p class="demo-note">Enter the <strong>ADMIN_TOKEN</strong> value from your backend's <code>.env</code> file as the password — that's what actually grants access; the username field is just a label. Make sure <code>API_BASE_URL</code> near the top of this page's script points at your running backend.</p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="sidebar">
+  <div class="brand">ABBAH<span>GAMJI</span></div>
+  <nav>
+    <a href="#" data-view="dashboard" class="active">Dashboard</a>
+    <a href="#" data-view="products">Products</a>
+    <a href="#" data-view="orders">Orders</a>
+    <a href="#" data-view="customers">Customers</a>
+  </nav>
+  <a href="index.html" class="back">&larr; Back to storefront</a>
+</div>
+
+<div class="main">
+
+  <!-- Dashboard -->
+  <section class="view-section active" id="view-dashboard">
+    <div class="page-head"><div><h1>Dashboard</h1><p>Overview of your store, this session.</p></div></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="label">Total Orders</div><div class="value" id="statOrders">0</div></div>
+      <div class="stat-card"><div class="label">Revenue</div><div class="value" id="statRevenue">₦0</div></div>
+      <div class="stat-card"><div class="label">Pending Orders</div><div class="value" id="statPending">0</div></div>
+      <div class="stat-card"><div class="label">Products Listed</div><div class="value" id="statProducts">0</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Recent Orders</h3></div>
+      <table>
+        <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody id="recentOrdersBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Products -->
+  <section class="view-section" id="view-products">
+    <div class="page-head">
+      <div><h1>Products</h1><p>Add, edit, or remove items from the storefront catalog.</p></div>
+      <button class="btn btn-solid" id="addProductBtn">Add Product</button>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Actions</th></tr></thead>
+        <tbody id="productsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Orders -->
+  <section class="view-section" id="view-orders">
+    <div class="page-head"><div><h1>Orders</h1><p>Update delivery status and view each customer's tailor's inscription.</p></div></div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Customers -->
+  <section class="view-section" id="view-customers">
+    <div class="page-head"><div><h1>Customers</h1><p>Accounts created on the storefront this session.</p></div></div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Saved Measurements</th></tr></thead>
+        <tbody id="customersBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- Product modal -->
+<div class="modal-bg" id="productModalBg">
+  <div class="modal-box">
+    <div class="mh"><h3 id="productModalTitle">Add Product</h3><button class="close-x" data-close="productModalBg">&times;</button></div>
+    <div class="mb">
+      <form id="productForm">
+        <input type="hidden" id="pId">
+        <div class="form-group"><label>Product Name</label><input type="text" id="pName" required></div>
+        <div class="form-row">
+          <div class="form-group"><label>Category</label>
+            <select id="pCat">
+              <option>Caps</option><option>Kaftan</option><option>Jallabiya</option><option>Senator Wear</option><option>Agbada</option><option>Hijab</option><option>Long Gown</option><option>Shoes</option><option>Handbags</option><option>Perfume</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Price (₦)</label><input type="number" id="pPrice" required></div>
+        </div>
+        <div class="form-group"><label>Old Price (₦) — optional, shows struck-through as a sale price</label><input type="number" id="pOldPrice" placeholder="Leave blank if not on sale"></div>
+        <div class="form-group"><label>Image URL</label><input type="text" id="pImg" placeholder="https://..."></div>
+        <div class="form-group"><label>Description</label><textarea id="pDesc" rows="2"></textarea></div>
+        <button type="submit" class="btn btn-solid btn-block">Save Product</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="adminToast"></div>
+
+<script>
+/* ============ BACKEND CONNECTION ============ */
+// Point this at your deployed backend (see the backend/ zip and its README).
+// This page is now served by the same backend that runs the API, so requests
+// go to the same origin — no separate URL to configure, no CORS to worry about.
+const API_BASE_URL = "https://YOUR-BACKEND-PROJECT.vercel.app";
+
+let adminToken = null; // the ADMIN_TOKEN from your backend's .env, entered at login below
+
+document.getElementById('adminLoginForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  // The username field is just a label here — the real check is whether the
+  // password matches your backend's ADMIN_TOKEN (set in its .env file).
+  const token = document.getElementById('adminPass').value;
+  try{
+    const res = await fetch(`${API_BASE_URL}/api/orders`, { headers: { Authorization: `Bearer ${token}` } });
+    if(!res.ok) throw new Error('Incorrect admin token');
+    adminToken = token;
+    document.getElementById('loginGate').style.display = 'none';
+    loadAll();
+  }catch(err){
+    adminToast(err.message.includes('fetch') ? "Couldn't reach the backend — check API_BASE_URL" : "Incorrect admin token");
+  }
+});
+
+function authHeaders(){
+  return { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` };
+}
+
+let products = [];
+let orders = [];
+let customers = [];
+
+const STAGES = ["Order Placed","Cutting & Tailoring","Quality Check","Out For Delivery","Delivered"];
+
+function money(n){ return "₦" + n.toLocaleString(); }
+function priceCellHtml(p){
+  if(p.oldPrice && Number(p.oldPrice) > Number(p.price)){
+    return `<span style="text-decoration:line-through;color:#999;font-size:.82em;margin-right:6px;">${money(p.oldPrice)}</span><span style="color:#b5442e;font-weight:600;">${money(p.price)}</span>`;
+  }
+  return money(p.price);
+}
+// Escapes untrusted strings before they're interpolated into innerHTML.
+// This matters most here: customer name/email and product name/description
+// are all supplied by site visitors (via checkout or, for products, whoever
+// has admin access) and get rendered straight into this dashboard's tables —
+// without escaping, a crafted name could run script in the admin's session.
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+function adminToast(msg){
+  const t = document.getElementById('adminToast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function statusPillClass(status){
+  if(status==="Order Placed") return "placed";
+  if(status==="Delivered") return "delivered";
+  if(status==="Out For Delivery") return "delivery";
+  return "progress";
+}
+
+async function loadAll(){
+  try{
+    const [productsRes, ordersRes, customersRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/api/products`),
+      fetch(`${API_BASE_URL}/api/orders`, { headers: authHeaders() }),
+      fetch(`${API_BASE_URL}/api/customers`, { headers: authHeaders() })
+    ]);
+    products = await productsRes.json();
+    orders = await ordersRes.json();
+    customers = await customersRes.json();
+  }catch(err){
+    adminToast("Couldn't load data from the backend");
+  }
+  renderDashboard(); renderProducts(); renderOrders(); renderCustomers();
+}
+
+/* ---------- Navigation ---------- */
+document.querySelectorAll('.sidebar nav a').forEach(link=>{
+  link.addEventListener('click', e=>{
+    e.preventDefault();
+    document.querySelectorAll('.sidebar nav a').forEach(a=>a.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelectorAll('.view-section').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-' + link.dataset.view).classList.add('active');
+  });
+});
+
+/* ---------- Dashboard ---------- */
+function renderDashboard(){
+  document.getElementById('statOrders').textContent = orders.length;
+  document.getElementById('statRevenue').textContent = money(orders.reduce((s,o)=>s+o.total,0));
+  document.getElementById('statPending').textContent = orders.filter(o=>o.status!=="Delivered").length;
+  document.getElementById('statProducts').textContent = products.length;
+  const body = document.getElementById('recentOrdersBody');
+  body.innerHTML = orders.slice(-5).reverse().map(o=>`
+    <tr><td>${escapeHtml(o.id)}</td><td>${escapeHtml(o.customer.name)}</td><td>${money(o.total)}</td>
+    <td><span class="pill ${statusPillClass(o.status)}">${o.status}</span></td></tr>`).join('')
+    || `<tr><td colspan="4" class="empty">No orders yet.</td></tr>`;
+}
+
+/* ---------- Products ---------- */
+function renderProducts(){
+  const body = document.getElementById('productsBody');
+  body.innerHTML = products.map(p=>`
+    <tr>
+      <td><img src="${escapeHtml(p.img)}" alt="${escapeHtml(p.name)}"></td>
+      <td>${escapeHtml(p.name)}</td>
+      <td>${escapeHtml(p.cat)}</td>
+      <td>${priceCellHtml(p)}</td>
+      <td><div class="row-actions">
+        <button data-edit="${p.id}">Edit</button>
+        <button data-delete="${p.id}">Delete</button>
+      </div></td>
+    </tr>`).join('') || `<tr><td colspan="5" class="empty">No products yet. Add your first one.</td></tr>`;
+}
+document.getElementById('addProductBtn').addEventListener('click', ()=>openProductModal());
+document.getElementById('productsBody').addEventListener('click', async e=>{
+  if(e.target.dataset.edit) openProductModal(Number(e.target.dataset.edit));
+  if(e.target.dataset.delete){
+    try{
+      const res = await fetch(`${API_BASE_URL}/api/products/${e.target.dataset.delete}`, { method: 'DELETE', headers: authHeaders() });
+      if(!res.ok) throw new Error();
+      products = products.filter(p=>p.id!==Number(e.target.dataset.delete));
+      renderProducts(); renderDashboard();
+      adminToast("Product removed");
+    }catch{ adminToast("Couldn't reach the backend to delete this product"); }
+  }
+});
+function openProductModal(id){
+  const p = products.find(x=>x.id===id);
+  document.getElementById('productModalTitle').textContent = p ? "Edit Product" : "Add Product";
+  document.getElementById('pId').value = p ? p.id : "";
+  document.getElementById('pName').value = p ? p.name : "";
+  document.getElementById('pCat').value = p ? p.cat : "Kaftan";
+  document.getElementById('pPrice').value = p ? p.price : "";
+  document.getElementById('pOldPrice').value = p && p.oldPrice ? p.oldPrice : "";
+  document.getElementById('pImg').value = p ? p.img : "";
+  document.getElementById('pDesc').value = p ? p.desc : "";
+  document.getElementById('productModalBg').classList.add('show');
+}
+document.getElementById('productForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const id = document.getElementById('pId').value;
+  const data = {
+    name: document.getElementById('pName').value,
+    cat: document.getElementById('pCat').value,
+    price: Number(document.getElementById('pPrice').value),
+    oldPrice: document.getElementById('pOldPrice').value ? Number(document.getElementById('pOldPrice').value) : null,
+    img: document.getElementById('pImg').value || "https://images.unsplash.com/photo-1617196701537-7329482cc9fe?q=80&w=200&auto=format&fit=crop",
+    desc: document.getElementById('pDesc').value
+  };
+  try{
+    if(id){
+      const res = await fetch(`${API_BASE_URL}/api/products/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+      if(!res.ok) throw new Error();
+      const updated = await res.json();
+      Object.assign(products.find(x=>x.id===Number(id)), updated);
+      adminToast("Product updated");
+    } else {
+      const res = await fetch(`${API_BASE_URL}/api/products`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+      if(!res.ok) throw new Error();
+      products.push(await res.json());
+      adminToast("Product added");
+    }
+    renderProducts(); renderDashboard();
+    document.getElementById('productModalBg').classList.remove('show');
+  }catch{
+    adminToast("Couldn't reach the backend to save this product");
+  }
+});
+
+/* ---------- Orders ---------- */
+function renderOrders(){
+  const body = document.getElementById('ordersBody');
+  body.innerHTML = orders.map(o=>{
+    const itemsText = o.items.map(i=>`${escapeHtml(i.name)} ×${i.qty}`).join(', ');
+    const measureRows = o.items.filter(i=>i.measurements).map(i=>{
+      const m = i.measurements;
+      return `<div class="measure-view"><strong>${escapeHtml(i.name)} — tailor's inscription</strong>
+        <div>Neck: ${m.neck ?? '—'}" · Chest: ${m.chest ?? '—'}" · Shoulder: ${m.shoulder ?? '—'}"</div>
+        <div>Sleeve: ${m.sleeve ?? '—'}" · Body Length: ${m.bodyLength ?? '—'}" · Waist: ${m.waist ?? '—'}"</div>
+      </div>`;
+    }).join('');
+    const loc = o.customer?.location;
+    const mapLink = loc ? `<a href="https://www.google.com/maps?q=${loc.lat},${loc.lng}" target="_blank" rel="noopener" style="font-size:.8em;">📍 View pinned location</a>` : '';
+    const addressBlock = o.customer?.address
+      ? `<div style="font-size:.82em;color:#666;margin-top:4px;">${escapeHtml(o.customer.address)}${mapLink ? '<br>' + mapLink : ''}</div>`
+      : '';
+    const deliveryBlock = o.estimatedDelivery?.label
+      ? `<div style="font-size:.78em;color:#8a6d1f;margin-top:2px;">Stipulated delivery: ${escapeHtml(o.estimatedDelivery.label)}</div>`
+      : '';
+    return `<tr>
+      <td>${escapeHtml(o.id)}${measureRows}</td>
+      <td>${escapeHtml(o.customer.name)}${addressBlock}${deliveryBlock}</td>
+      <td>${itemsText}</td>
+      <td>${money(o.total)}</td>
+      <td>
+        <select class="status-select" data-status="${o.id}">
+          ${STAGES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" class="empty">No orders yet.</td></tr>`;
+}
+document.getElementById('ordersBody').addEventListener('change', async e=>{
+  if(e.target.dataset.status){
+    const orderId = e.target.dataset.status;
+    const newStatus = e.target.value;
+    try{
+      const res = await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ status: newStatus }) });
+      if(!res.ok) throw new Error();
+      orders.find(o=>o.id===orderId).status = newStatus;
+      renderDashboard();
+      adminToast(orderId + " marked as " + newStatus);
+    }catch{
+      adminToast("Couldn't reach the backend to update this order");
+    }
+  }
+});
+
+/* ---------- Customers ---------- */
+function renderCustomers(){
+  const body = document.getElementById('customersBody');
+  body.innerHTML = customers.map(c=>{
+    const m = c.measurements;
+    const measureText = m ? `Chest ${m.chest ?? '—'}", Waist ${m.waist ?? '—'}", Body Length ${m.bodyLength ?? '—'}"` : "Not provided";
+    return `<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.email)}</td><td>${measureText}</td></tr>`;
+  }).join('') || `<tr><td colspan="3" class="empty">No customer accounts yet.</td></tr>`;
+}
+
+/* ---------- Modal close ---------- */
+document.querySelectorAll('[data-close]').forEach(btn=>{
+  btn.addEventListener('click', ()=>document.getElementById(btn.dataset.close).classList.remove('show'));
+});
+</script>
+</body>
+</html>
