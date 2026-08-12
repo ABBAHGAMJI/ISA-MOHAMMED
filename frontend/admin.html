@@ -391,8 +391,9 @@ document.getElementById('productForm').addEventListener('submit', async e=>{
     }
     renderProducts(); renderDashboard();
     document.getElementById('productModalBg').classList.remove('show');
-  }catch{
-    adminToast("Couldn't reach the backend to save this product");
+  }catch (err) {
+    console.error('save product error:", err);
+    adminToast("Save failed: " + (err.massage || "Unknown error"));
   }
 });
 
